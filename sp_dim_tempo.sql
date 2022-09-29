@@ -2,10 +2,10 @@
 
 use bd_rede_postos
 
+GO
 create or alter procedure sp_insert_data (@DATA_INICIO DATETIME, @DATA_FIM DATETIME)
 as
 BEGIN
-    set nocount on
     DECLARE @id_tempo BIGINT,
 			@nivel VARCHAR(8),
 			@data DATETIME,
@@ -17,11 +17,11 @@ BEGIN
 			@trimestre INT,
 			@nome_trimestre VARCHAR(100),
 			@semestre INT,
-			@nome_semeStre VARCHAR(100),
-			@ano INT,
+			@nome_semestre VARCHAR(100),
+			@ano INT
 
 			SET @DATA = @DATA_INICIO
-
+			
 			WHILE @DATA <= @DATA_FIM
 			BEGIN
 				 
@@ -42,22 +42,23 @@ BEGIN
 
 				 SELECT @SEMESTRE = CASE
 					  WHEN @MES in (1,2,3,4,5,6) THEN 1
-					  WHEN @MES in (7,8,9,10,11,12) THEN 2
-				 END
+					  WHEN @MES in (7,8,9,10,11,12) THEN 2 END
+				 
 
 				 SELECT @NOME_SEMESTRE = CASE
 					  WHEN @MES in (1,2,3,4,5,6) THEN 'PRIMEIRO SEMESTRE'
-					  WHEN @MES in (7,8,9,10,11,12) THEN 'SEGUNDO SEMESTRE'
-				 END
+					  WHEN @MES in (7,8,9,10,11,12) THEN 'SEGUNDO SEMESTRE' END
+				 
 
 				 SET @ANO = YEAR(@DATA)
 
-				 INSERT INTO DIM_TEMPO VALUES(@DIA, @DIA_SEMANA, @FIM_SEMANA, @MES, @NOME_MES, @TRIMESTRE, @NOME_TRIMESTRE, @SEMESTRE, @NOME_SEMESTRE)
+				 INSERT INTO DIM_TEMPO VALUES('DIA',@DATA,@DIA, @DIA_SEMANA, @FIM_SEMANA, @MES, @NOME_MES, @TRIMESTRE, @NOME_TRIMESTRE, @SEMESTRE, @NOME_SEMESTRE,@ANO)
  
 				 SET @DATA = DATEADD(DAY,1,@DATA)
+				 END
 END
-	Set nocount OFF
-
+GO
+	
 			
-			SELECT * DIM_TEMPO
+			SELECT * FROM DIM_TEMPO 
 			EXEC sp_insert_data '2021-01-01', '2022-01-01'
