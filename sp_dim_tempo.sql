@@ -3,7 +3,7 @@
 use bd_rede_postos
 
 GO
-create or alter procedure sp_insert_data (@DATA_INICIO DATETIME, @DATA_FIM DATETIME)
+create or alter procedure sp_insert_DIA (@DATA_INICIO DATETIME, @DATA_FIM DATETIME)
 as
 BEGIN
     DECLARE @id_tempo BIGINT,
@@ -61,4 +61,55 @@ GO
 	
 			
 			SELECT * FROM DIM_TEMPO 
-			EXEC sp_insert_data '2021-01-01', '2022-01-01'
+			EXEC sp_insert_DIA '2021-01-01', '2022-01-01'
+			SELECT * FROM DIM_TEMPO  -- DEU CERTO ESSE POR DIA
+
+
+-- AGORA FAZER POR MES
+-- ainda nao funciona
+create or alter procedure sp_insert_MES (@DATA_INICIO DATETIME, @DATA_FIM DATETIME)
+as
+BEGIN
+    DECLARE @id_tempo BIGINT,
+			@nivel VARCHAR(8),
+
+			@data DATETIME,
+			@mes INT,
+			@nome_mes VARCHAR(100),
+			@trimestre INT,
+			@nome_trimestre VARCHAR(100),
+			@semestre INT,
+			@nome_semestre VARCHAR(100),
+			@ano INT
+
+			SET @DATA = @DATA_INICIO
+			
+			WHILE @DATA <= @DATA_FIM
+			BEGIN
+
+				 SET @MES = MONTH(@DATA)
+				 SET @NOME_MES = DATENAME(MONTH,@DATA)
+				 SET @TRIMESTRE = DATEPART(QUARTER,@DATA)
+				 SET @NOME_TRIMESTRE = DATENAME(QUARTER,@DATA)
+
+				 SELECT @SEMESTRE = CASE
+					  WHEN @MES in (1,2,3,4,5,6) THEN 1
+					  WHEN @MES in (7,8,9,10,11,12) THEN 2 END
+				 
+
+				 SELECT @NOME_SEMESTRE = CASE
+					  WHEN @MES in (1,2,3,4,5,6) THEN 'PRIMEIRO SEMESTRE'
+					  WHEN @MES in (7,8,9,10,11,12) THEN 'SEGUNDO SEMESTRE' END
+				 
+
+				 SET @ANO = YEAR(@DATA)
+
+				 INSERT INTO DIM_TEMPO VALUES('DIA',@DATA, @MES, @NOME_MES, @TRIMESTRE, @NOME_TRIMESTRE, @SEMESTRE, @NOME_SEMESTRE, @ANO)
+ 
+				 SET @DATA = DATEADD(DAY,1,@DATA)
+				 END
+END
+
+			SELECT * FROM DIM_TEMPO 
+			EXEC sp_insert_MES '2021-01-01', '2022-01-01'
+			SELECT * FROM DIM_TEMPO  -- DEU CERTO POR DIA
