@@ -1,0 +1,48 @@
+-- Scripts para povoar o DIMENSÃO TEMPO 
+-- povoando por mês
+create or alter procedure sp_insert_MES (@DATA_INICIO DATETIME, @DATA_FIM DATETIME)
+as
+BEGIN
+    DECLARE @id_tempo BIGINT,
+			@nivel VARCHAR(8),
+
+			@data DATETIME,
+			@mes INT,
+			@nome_mes VARCHAR(100),
+			@trimestre INT,
+			@nome_trimestre VARCHAR(100),
+			@semestre INT,
+			@nome_semestre VARCHAR(100),
+			@ano INT
+
+			SET @DATA = @DATA_INICIO
+			
+			WHILE @DATA <= @DATA_FIM
+			BEGIN
+
+				 SET @MES = MONTH(@DATA)
+				 SET @NOME_MES = DATENAME(MONTH,@DATA)
+				 SET @TRIMESTRE = DATEPART(QUARTER,@DATA)
+				 SET @NOME_TRIMESTRE = DATENAME(QUARTER,@DATA)
+
+				 SELECT @SEMESTRE = CASE
+					  WHEN @MES in (1,2,3,4,5,6) THEN 1
+					  WHEN @MES in (7,8,9,10,11,12) THEN 2 END
+				 
+
+				 SELECT @NOME_SEMESTRE = CASE
+					  WHEN @MES in (1,2,3,4,5,6) THEN 'PRIMEIRO SEMESTRE'
+					  WHEN @MES in (7,8,9,10,11,12) THEN 'SEGUNDO SEMESTRE' END
+				 
+
+				 SET @ANO = YEAR(@DATA)
+
+				 INSERT INTO DIM_TEMPO(NIVEL,MES,NOME_MES,TRIMESTRE,NOME_TRIMESTRE,SEMESTRE,NOME_SEMESTRE,ANO) VALUES('MES', @MES, @NOME_MES, @TRIMESTRE, @NOME_TRIMESTRE, @SEMESTRE, @NOME_SEMESTRE, @ANO)
+ 
+				 SET @DATA = DATEADD(MONTH,1,@DATA)
+				 END
+END
+
+			SELECT * FROM DIM_TEMPO 
+			EXEC sp_insert_MES '2021-01-01', '2022-01-01'
+			SELECT * FROM DIM_TEMPO  -- DEU CERTO POR MES
